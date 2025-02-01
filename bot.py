@@ -13,14 +13,15 @@ Solution provides base AI chat bot structure and training format to create a Men
 #To add speech to text for input: pip install SpeechRecognition
 #Also need to install this to use microphone: pip install pyaudio
 
-import pyttsx3
+import pyttsx3 #Text-to-speech
+import speech_recognition as sr  # Speech-to-text
+
 from chatterbot import ChatBot
 import nltk
 nltk.download('punkt_tab')
 from chatterbot.trainers import ListTrainer
 import train
 from chatterbot.trainers import ChatterBotCorpusTrainer
-import speech_recognition as sr
 
 chatbot_name = "Your Companion"
 chatbot = ChatBot(chatbot_name)
@@ -29,13 +30,15 @@ trainer = ChatterBotCorpusTrainer(chatbot)
 
 
 ##Run Training Protcols from train.py
-# train.introduce_yourself()
+#train.introduce_yourself()
 #train.trainbot()
 trainer.train(
     "chatterbot.corpus.english",
-    "health_training",
-)
+    "formatted_health_training2",
 
+    )
+
+# Initialize text-to-speech engine
 engine = pyttsx3.init()
 
 # Function to convert text to speech
@@ -51,17 +54,16 @@ engine.setProperty("volume", 1.0)  # Adjust volume (0.0 to 1.0)
 voices = engine.getProperty("voices")
 engine.setProperty("voice", voices[1].id)  # Change index for different voices
 
-# **New function added (green)**: speech_to_text function for speech recognition
-def speech_to_text():  # **New addition (green)**
-    recognizer = sr.Recognizer()  # **New addition (green)**
-
-    with sr.Microphone() as source:  # **New addition (green)**
-        print("Listening... Speak now:")  # **New addition (green)**
-        recognizer.adjust_for_ambient_noise(source)  # Reduce background noise
+# Function to convert speech to text
+def speech_to_text():
+    recognizer = sr.Recognizer()
+    with sr.Microphone() as source:
+        print("Listening... Speak now:")
+        recognizer.adjust_for_ambient_noise(source)  # Adjust for ambient noise
         audio = recognizer.listen(source)
 
     try:
-        text = recognizer.recognize_google(audio)
+        text = recognizer.recognize_google(audio)  # Google Web Speech API
         print("You said:", text)
         return text
     except sr.UnknownValueError:
@@ -77,8 +79,8 @@ while True:
     #if query in train.exit_conditions:
         #break
 
-    # For speech to text input
-    query = speech_to_text()  
+    #for speech to text as input
+    query = speech_to_text()  # Get user input via speech
     if query is None: # If speech recognition failed, skip this loop iteration
         continue
     # Check exit condition
@@ -86,8 +88,8 @@ while True:
         break
     else:
         #print(f">>>>: {chatbot.get_response(query)}")
-        
-        # For text to speech output
+
+        #for text to speech
         response = chatbot.get_response(query)
         print(f">>>>: {response}")
         speak(str(response))  # Convert response to speech
