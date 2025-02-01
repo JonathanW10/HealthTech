@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health Companion Chatbot</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+    <h1>Health Hub - Health Companion</h1>
+    <select id="personality">
+        <option value="calm">Calm</option>
+        <option value="motivational">Motivational</option>
+        <option value="logical">Logical</option>
+    </select>
+    <button id="talk">🎤 Speak</button>
+    <p id="output">Bot: </p>
+
+    <canvas id="faceCanvas"></canvas>
+
+    <script>
+        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        recognition.lang = 'en-US';
+        recognition.interimResults = false;
+
+        document.getElementById("talk").onclick = function() {
+            recognition.start();
+        };
+
+        recognition.onresult = function(event) {
+            let text = event.results[0][0].transcript;
+            let personality = document.getElementById("personality").value;
+            sendToChatbot(text, personality);
+        };
+
+        function sendToChatbot(text, personality) {
+            fetch("http://127.0.0.1:5000/chat", {
+                method: "POST",
+                body: JSON.stringify({ message: text, personality: personality }),
+                headers: { "Content-Type": "application/json" }
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("output").innerText = "Bot: " + data.reply;
+                speakResponse(data.reply);
+            });
+        }
+
+        function speakResponse(response) {
+            let synth = window.speechSynthesis;
+            let utterance = new SpeechSynthesisUtterance(response);
+            synth.speak(utterance);
+        }
+
+        function animateFace(isTalking) {
+            // Placeholder for real-time face animation logic
+        }
+    </script>
+</body>
+</html>
